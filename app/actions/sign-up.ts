@@ -5,12 +5,40 @@ import { revalidatePath } from "next/cache"
 
 type ActionResult = { success: true; message: string } | { success: false; error: string; details?: string }
 
+// Challenge mapping from form values to database columns
+const challengeMapping: Record<string, string> = {
+  "Information Overload": "challenge_information_overload",
+  "Difficulty Finding Relevant Content": "challenge_difficulty_finding_content",
+  "Struggling with Personalized Learning": "challenge_personalized_learning",
+  "Slow Knowledge Absorption": "challenge_slow_knowledge_absorption",
+  "Inconsistent Skill Development": "challenge_inconsistent_skill_development",
+  "Lack of Real-Time Feedback": "challenge_lack_realtime_feedback",
+  "Gaps in Existing Knowledge": "challenge_gaps_existing_knowledge",
+  "Limited Time for Learning": "challenge_limited_time_learning",
+  "Overwhelmed by Complex Topics": "challenge_overwhelmed_complex_topics",
+  "Fragmented Learning Resources": "challenge_fragmented_resources",
+  "Other: Please Specify": "challenge_other",
+}
+
 export async function submitSignUp(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
   // Check if Supabase client is configured
   if (!supabaseAdmin) {
+    const missingVars = []
+    if (!process.env.SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      missingVars.push("SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL")
+    }
+    if (
+      !process.env.SUPABASE_SERVICE_ROLE_KEY &&
+      !process.env.SUPABASE_ANON_KEY &&
+      !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ) {
+      missingVars.push("SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY, or NEXT_PUBLIC_SUPABASE_ANON_KEY")
+    }
+
     return {
       success: false,
-      error: "Database connection not configured. Please add Supabase environment variables.",
+      error: "Database connection not configured.",
+      details: `Missing environment variables: ${missingVars.join(", ")}`,
     }
   }
 
@@ -23,14 +51,41 @@ export async function submitSignUp(_prev: ActionResult | null, formData: FormDat
   const challenges = formData.getAll("challenges").filter((c) => typeof c === "string") as string[]
   const otherChallenge = f("otherChallenge")
 
-  const signUp = {
+  // Build the signup object with basic info
+  const signUp: any = {
     name: f("name"),
-    country_code: f("countryCode"),
-    phone: f("phone"),
+    country_code: f("countryCode") || null,
+    phone: f("phone") || null,
     email: f("email").toLowerCase(),
     stay_in_loop: formData.get("stayInLoop") === "yes",
     subject: f("subject"),
   }
+
+  // Add challenge columns - set all to false first
+  Object.values(challengeMapping).forEach((column) => {
+    signUp[column] = false
+  })
+
+  // Set selected challenges to true
+  challenges.forEach((challenge) => {
+    const columnName = challengeMapping[challenge]
+    if (columnName) {
+      signUp[columnName] = true
+    }
+  })
+
+  // Add other challenge description if "Other" is selected
+  if (challenges.includes("Other: Please Specify")) {
+    signUp.challenge_other_description = otherChallenge || null
+  }
+
+  console.log("Form data processed:", {
+    name: signUp.name,
+    email: signUp.email,
+    subject: signUp.subject,
+    selectedChallenges: challenges,
+    otherDescription: signUp.challenge_other_description,
+  })
 
   /* ---------- Validation ---------- */
   if (!signUp.name || !signUp.email || !signUp.subject) {
@@ -42,14 +97,28 @@ export async function submitSignUp(_prev: ActionResult | null, formData: FormDat
   if (challenges.length === 0) {
     return { success: false, error: "Please select at least one learning challenge." }
   }
-  // Validate that if "Other" is selected, the text field is filled
   if (challenges.includes("Other: Please Specify") && !otherChallenge) {
     return { success: false, error: "Please specify your other learning challenge." }
   }
 
   /* ---------- Store in Database ---------- */
   try {
-    // Insert signup first
+    // Test database connection first
+    console.log("Testing database connection...")
+    const { error: testError } = await supabaseAdmin.from("signups").select("id").limit(1)
+
+    if (testError) {
+      console.error("Database test error:", testError)
+      return {
+        success: false,
+        error: "Database table not found.",
+        details: `Please run the database setup script first. Error: ${testError.message}`,
+      }
+    }
+
+    console.log("Database connection successful, inserting signup...")
+
+    // Insert signup with all data in one go
     const { data: signupData, error: signupError } = await supabaseAdmin
       .from("signups")
       .insert(signUp)
@@ -57,91 +126,53 @@ export async function submitSignUp(_prev: ActionResult | null, formData: FormDat
       .single()
 
     if (signupError) {
-      console.error("Supabase signup insert error:", signupError)
+      console.error("Supabase signup insert error:", {
+        error: signupError,
+        message: signupError.message,
+        details: signupError.details,
+        hint: signupError.hint,
+        code: signupError.code,
+      })
+
+      // Handle specific error cases
+      if (signupError.code === "23505") {
+        return {
+          success: false,
+          error: "This email address is already registered.",
+          details: "Please use a different email address or contact support if this is an error.",
+        }
+      }
+
+      if (signupError.code === "42P01") {
+        return {
+          success: false,
+          error: "Database table not found.",
+          details: "Please run the database setup script: scripts/create-single-signups-table.sql",
+        }
+      }
+
       return {
         success: false,
-        error: `Database error: ${signupError.message}`,
-        details: signupError.details || signupError.hint,
+        error: "Failed to save signup.",
+        details: signupError.message || "Unknown database error occurred.",
       }
     }
 
-    // ─────────── Challenge lookup ────────────
-    const { data: challengeData, error: challengeError } = await supabaseAdmin
-      .from("challenges")
-      .select("id, name")
-      .in(
-        "name",
-        challenges.filter((c) => c !== "Other: Please Specify"),
-      )
-
-    if (challengeError) {
-      // Table probably missing (error 42P01) or some other problem
-      const missingTable = challengeError.code === "42P01" || challengeError.message?.includes("does not exist")
-
-      const helpText = missingTable
-        ? "The challenges table hasn’t been created yet. Run scripts/create-challenges-table.sql in Supabase → SQL Editor first."
-        : challengeError.message
-
-      console.error("Challenge lookup error:", challengeError)
+    if (!signupData) {
       return {
         success: false,
-        error: "Challenge lookup failed.",
-        details: helpText,
+        error: "Signup was not saved properly.",
+        details: "No data returned from database insert.",
       }
     }
 
-    // Prepare signup_challenges records
-    const signupChallenges = []
-
-    // Add regular challenges
-    if (challengeData) {
-      for (const challenge of challengeData) {
-        signupChallenges.push({
-          signup_id: signupData.id,
-          challenge_id: challenge.id,
-          custom_description: null,
-        })
-      }
-    }
-
-    // Add custom "Other" challenge if selected
-    if (challenges.includes("Other: Please Specify") && otherChallenge) {
-      // Ensure an "Other" record exists in challenges table (idempotent)
-      const { data: otherRow, error: otherErr } = await supabaseAdmin
-        .from("challenges")
-        .upsert({ name: "Other", description: "User-specified learning challenge" }, { onConflict: "name" })
-        .select("id")
-        .single()
-
-      if (otherErr) {
-        console.error("Failed to upsert 'Other' challenge:", otherErr)
-      } else {
-        signupChallenges.push({
-          signup_id: signupData.id,
-          challenge_id: otherRow.id,
-          custom_description: otherChallenge,
-        })
-      }
-    }
-
-    // Insert challenge relationships
-    if (signupChallenges.length > 0) {
-      const { error: challengeInsertError } = await supabaseAdmin.from("signup_challenges").insert(signupChallenges)
-
-      if (challengeInsertError) {
-        console.error("Challenge relationship insert error:", challengeInsertError)
-        // Don't fail the whole signup for this, just log it
-        console.warn("Signup succeeded but challenge relationships failed to save")
-      }
-    }
-
-    console.log("Successfully inserted sign-up:", signupData)
+    console.log("Signup inserted successfully:", signupData.id)
   } catch (e: any) {
-    console.error("Unexpected error:", e)
+    console.error("Unexpected error during signup:", e)
     return {
       success: false,
-      error: "An unexpected error occurred while saving your sign-up.",
-      details: e.message,
+      error: "An unexpected error occurred.",
+      details: e.message || "Please try again later.",
     }
   }
 
