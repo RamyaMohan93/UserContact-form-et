@@ -6,11 +6,54 @@ import { revalidatePath } from "next/cache"
 type ActionResult = { success: true; message: string } | { success: false; error: string; details?: string }
 
 export async function submitSignUp(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
+  // Debug logging
+  console.log("Environment check:")
+  console.log("SUPABASE_URL:", !!process.env.SUPABASE_URL)
+  console.log("NEXT_PUBLIC_SUPABASE_URL:", !!process.env.NEXT_PUBLIC_SUPABASE_URL)
+  console.log("SUPABASE_SERVICE_ROLE_KEY:", !!process.env.SUPABASE_SERVICE_ROLE_KEY)
+  console.log("SUPABASE_ANON_KEY:", !!process.env.SUPABASE_ANON_KEY)
+  console.log("NEXT_PUBLIC_SUPABASE_ANON_KEY:", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+
   // Check if Supabase client is configured
   if (!supabaseAdmin) {
+    const missingVars = []
+    if (!process.env.SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      missingVars.push("SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL")
+    }
+    if (
+      !process.env.SUPABASE_SERVICE_ROLE_KEY &&
+      !process.env.SUPABASE_ANON_KEY &&
+      !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ) {
+      missingVars.push("SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY, or NEXT_PUBLIC_SUPABASE_ANON_KEY")
+    }
+
     return {
       success: false,
-      error: "Database connection not configured. Please add Supabase environment variables.",
+      error: "Database connection not configured.",
+      details: `Missing environment variables: ${missingVars.join(", ")}. Please check your environment configuration.`,
+    }
+  }
+
+  // Test the connection
+  try {
+    const { error: connectionError } = await supabaseAdmin
+      .from("signups")
+      .select("count", { count: "exact", head: true })
+    if (connectionError) {
+      console.error("Supabase connection test failed:", connectionError)
+      return {
+        success: false,
+        error: "Database connection failed.",
+        details: `Connection error: ${connectionError.message}. Please check your Supabase configuration.`,
+      }
+    }
+  } catch (e: any) {
+    console.error("Supabase connection test error:", e)
+    return {
+      success: false,
+      error: "Database connection test failed.",
+      details: e.message,
     }
   }
 
