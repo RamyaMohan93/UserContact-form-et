@@ -5,6 +5,21 @@ import { revalidatePath } from "next/cache"
 
 type ActionResult = { success: true; message: string } | { success: false; error: string; details?: string }
 
+// Challenge mapping from form values to database columns
+const challengeMapping: Record<string, string> = {
+  "Information Overload": "challenge_information_overload",
+  "Difficulty Finding Relevant Content": "challenge_difficulty_finding_content",
+  "Struggling with Personalized Learning": "challenge_personalized_learning",
+  "Slow Knowledge Absorption": "challenge_slow_knowledge_absorption",
+  "Inconsistent Skill Development": "challenge_inconsistent_skill_development",
+  "Lack of Real-Time Feedback": "challenge_lack_realtime_feedback",
+  "Gaps in Existing Knowledge": "challenge_gaps_existing_knowledge",
+  "Limited Time for Learning": "challenge_limited_time_learning",
+  "Overwhelmed by Complex Topics": "challenge_overwhelmed_complex_topics",
+  "Fragmented Learning Resources": "challenge_fragmented_resources",
+  "Other: Please Specify": "challenge_other",
+}
+
 export async function submitSignUp(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
   // Check if Supabase client is configured
   if (!supabaseAdmin) {
@@ -36,7 +51,8 @@ export async function submitSignUp(_prev: ActionResult | null, formData: FormDat
   const challenges = formData.getAll("challenges").filter((c) => typeof c === "string") as string[]
   const otherChallenge = f("otherChallenge")
 
-  const signUp = {
+  // Build the signup object with basic info
+  const signUp: any = {
     name: f("name"),
     country_code: f("countryCode") || null,
     phone: f("phone") || null,
@@ -45,12 +61,30 @@ export async function submitSignUp(_prev: ActionResult | null, formData: FormDat
     subject: f("subject"),
   }
 
-  console.log("Form data received:", {
+  // Add challenge columns - set all to false first
+  Object.values(challengeMapping).forEach((column) => {
+    signUp[column] = false
+  })
+
+  // Set selected challenges to true
+  challenges.forEach((challenge) => {
+    const columnName = challengeMapping[challenge]
+    if (columnName) {
+      signUp[columnName] = true
+    }
+  })
+
+  // Add other challenge description if "Other" is selected
+  if (challenges.includes("Other: Please Specify")) {
+    signUp.challenge_other_description = otherChallenge || null
+  }
+
+  console.log("Form data processed:", {
     name: signUp.name,
     email: signUp.email,
     subject: signUp.subject,
-    challenges: challenges,
-    otherChallenge: otherChallenge,
+    selectedChallenges: challenges,
+    otherDescription: signUp.challenge_other_description,
   })
 
   /* ---------- Validation ---------- */
@@ -69,7 +103,7 @@ export async function submitSignUp(_prev: ActionResult | null, formData: FormDat
 
   /* ---------- Store in Database ---------- */
   try {
-    // First, let's test if the signups table exists
+    // Test database connection first
     console.log("Testing database connection...")
     const { error: testError } = await supabaseAdmin.from("signups").select("id").limit(1)
 
@@ -78,13 +112,13 @@ export async function submitSignUp(_prev: ActionResult | null, formData: FormDat
       return {
         success: false,
         error: "Database table not found.",
-        details: `Please run the database setup scripts first. Error: ${testError.message}`,
+        details: `Please run the database setup script first. Error: ${testError.message}`,
       }
     }
 
     console.log("Database connection successful, inserting signup...")
 
-    // Insert signup
+    // Insert signup with all data in one go
     const { data: signupData, error: signupError } = await supabaseAdmin
       .from("signups")
       .insert(signUp)
@@ -113,7 +147,7 @@ export async function submitSignUp(_prev: ActionResult | null, formData: FormDat
         return {
           success: false,
           error: "Database table not found.",
-          details: "Please run the database setup scripts first.",
+          details: "Please run the database setup script: scripts/create-single-signups-table.sql",
         }
       }
 
@@ -133,16 +167,6 @@ export async function submitSignUp(_prev: ActionResult | null, formData: FormDat
     }
 
     console.log("Signup inserted successfully:", signupData.id)
-
-    // Now handle challenges - but don't fail the whole signup if this fails
-    try {
-      await handleChallenges(signupData.id, challenges, otherChallenge)
-    } catch (challengeError) {
-      console.error("Challenge handling failed (non-critical):", challengeError)
-      // Continue - the signup was successful even if challenges failed
-    }
-
-    console.log("Sign-up process completed successfully")
   } catch (e: any) {
     console.error("Unexpected error during signup:", e)
     return {
@@ -156,70 +180,5 @@ export async function submitSignUp(_prev: ActionResult | null, formData: FormDat
   return {
     success: true,
     message: "🎉 Thank you for signing up! We'll be in touch soon with updates about CortexCatalyst.",
-  }
-}
-
-async function handleChallenges(signupId: string, challenges: string[], otherChallenge: string) {
-  if (!supabaseAdmin) return
-
-  // Check if challenges table exists
-  const { error: challengeTableError } = await supabaseAdmin.from("challenges").select("id").limit(1)
-
-  if (challengeTableError) {
-    console.log("Challenges table not found, skipping challenge handling")
-    return
-  }
-
-  // Get existing challenges
-  const { data: challengeData, error: challengeError } = await supabaseAdmin
-    .from("challenges")
-    .select("id, name")
-    .in(
-      "name",
-      challenges.filter((c) => c !== "Other: Please Specify"),
-    )
-
-  if (challengeError) {
-    console.error("Challenge lookup error:", challengeError)
-    return
-  }
-
-  const signupChallenges = []
-
-  // Add regular challenges
-  if (challengeData) {
-    for (const challenge of challengeData) {
-      signupChallenges.push({
-        signup_id: signupId,
-        challenge_id: challenge.id,
-        custom_description: null,
-      })
-    }
-  }
-
-  // Handle "Other" challenge
-  if (challenges.includes("Other: Please Specify") && otherChallenge) {
-    const { data: otherRow, error: otherErr } = await supabaseAdmin
-      .from("challenges")
-      .upsert({ name: "Other", description: "User-specified learning challenge" }, { onConflict: "name" })
-      .select("id")
-      .single()
-
-    if (!otherErr && otherRow) {
-      signupChallenges.push({
-        signup_id: signupId,
-        challenge_id: otherRow.id,
-        custom_description: otherChallenge,
-      })
-    }
-  }
-
-  // Insert challenge relationships
-  if (signupChallenges.length > 0) {
-    const { error: challengeInsertError } = await supabaseAdmin.from("signup_challenges").insert(signupChallenges)
-
-    if (challengeInsertError) {
-      console.error("Challenge relationship insert error:", challengeInsertError)
-    }
   }
 }

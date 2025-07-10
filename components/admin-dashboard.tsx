@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
-type SignupWithChallenges = {
+type SignupData = {
   id: string
   name: string
   email: string
@@ -13,30 +13,59 @@ type SignupWithChallenges = {
   subject: string
   stay_in_loop: boolean
   created_at: string
-  challenges: Array<{
-    name?: string
-    custom_description?: string
-  }>
+  challenge_information_overload: boolean
+  challenge_difficulty_finding_content: boolean
+  challenge_personalized_learning: boolean
+  challenge_slow_knowledge_absorption: boolean
+  challenge_inconsistent_skill_development: boolean
+  challenge_lack_realtime_feedback: boolean
+  challenge_gaps_existing_knowledge: boolean
+  challenge_limited_time_learning: boolean
+  challenge_overwhelmed_complex_topics: boolean
+  challenge_fragmented_resources: boolean
+  challenge_other: boolean
+  challenge_other_description?: string
+}
+
+const challengeLabels: Record<string, string> = {
+  challenge_information_overload: "Information Overload",
+  challenge_difficulty_finding_content: "Difficulty Finding Relevant Content",
+  challenge_personalized_learning: "Struggling with Personalized Learning",
+  challenge_slow_knowledge_absorption: "Slow Knowledge Absorption",
+  challenge_inconsistent_skill_development: "Inconsistent Skill Development",
+  challenge_lack_realtime_feedback: "Lack of Real-Time Feedback",
+  challenge_gaps_existing_knowledge: "Gaps in Existing Knowledge",
+  challenge_limited_time_learning: "Limited Time for Learning",
+  challenge_overwhelmed_complex_topics: "Overwhelmed by Complex Topics",
+  challenge_fragmented_resources: "Fragmented Learning Resources",
+  challenge_other: "Other",
 }
 
 export default function AdminDashboard() {
-  const [signups, setSignups] = useState<SignupWithChallenges[]>([])
+  const [signups, setSignups] = useState<SignupData[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchSignups()
+    // This would need to be implemented as an API route or server component
+    // since we can't use supabaseAdmin directly in client components
+    console.log("Admin dashboard would fetch signups here")
+    setLoading(false)
   }, [])
 
-  const fetchSignups = async () => {
-    try {
-      // This would need to be called from a server component or API route
-      // since supabaseAdmin is server-side only
-      console.log("Admin dashboard would fetch signups with challenges here")
-      setLoading(false)
-    } catch (error) {
-      console.error("Error fetching signups:", error)
-      setLoading(false)
-    }
+  const getSelectedChallenges = (signup: SignupData) => {
+    const selected = []
+
+    Object.entries(challengeLabels).forEach(([key, label]) => {
+      if (signup[key as keyof SignupData]) {
+        if (key === "challenge_other" && signup.challenge_other_description) {
+          selected.push(`${label}: ${signup.challenge_other_description}`)
+        } else {
+          selected.push(label)
+        }
+      }
+    })
+
+    return selected
   }
 
   if (loading) {
@@ -46,6 +75,9 @@ export default function AdminDashboard() {
   return (
     <div className="p-8 space-y-6">
       <h1 className="text-3xl font-bold">CortexCatalyst Signups</h1>
+      <p className="text-gray-600">
+        All signup data is now stored in a single table with individual columns for each challenge.
+      </p>
 
       <div className="grid gap-6">
         {signups.map((signup) => (
@@ -72,9 +104,9 @@ export default function AdminDashboard() {
                 <div>
                   <h4 className="font-medium mb-2">Learning Challenges:</h4>
                   <div className="flex flex-wrap gap-2">
-                    {signup.challenges.map((challenge, index) => (
+                    {getSelectedChallenges(signup).map((challenge, index) => (
                       <Badge key={index} variant="outline">
-                        {challenge.name || `Other: ${challenge.custom_description}`}
+                        {challenge}
                       </Badge>
                     ))}
                   </div>
