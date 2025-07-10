@@ -27,19 +27,27 @@ export default function HomePage() {
           <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-blue-600">View Analytics</CardTitle>
-              <CardDescription>See learning challenge insights</CardDescription>
+              <CardDescription>Metabase dashboard with insights</CardDescription>
             </CardHeader>
             <CardContent>
-              <Link href="/analytics">
+              <a href="http://localhost:3001" target="_blank" rel="noopener noreferrer">
                 <Button
                   variant="outline"
                   className="w-full border-blue-500 text-blue-600 hover:bg-blue-50 font-semibold py-3 rounded-full bg-transparent"
                 >
-                  View Analytics
+                  Open Metabase
                 </Button>
-              </Link>
+              </a>
             </CardContent>
           </Card>
+        </div>
+
+        <div className="mt-8 p-4 bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">📊 Analytics Dashboard</h3>
+          <p className="text-sm text-gray-600">
+            Professional analytics powered by Metabase. View learning challenge distributions, signup trends, and user
+            insights.
+          </p>
         </div>
       </div>
     </div>
