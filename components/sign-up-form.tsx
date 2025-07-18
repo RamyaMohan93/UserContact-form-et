@@ -1,19 +1,21 @@
 "use client"
 
-import { useState } from "react"
-import { useActionState } from "react"
-import { submitSignUp } from "@/app/actions/sign-up"
+import { useFormStatus } from "react-dom"
+import { useActionState, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { CheckCircle, Users, BarChart3 } from "lucide-react"
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
+import { submitSignUp } from "@/app/actions/sign-up"
+import { CheckCircle, AlertCircle, Users } from "lucide-react"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
-const challenges = [
+const initialState = null
+
+const learningChallenges = [
   "Information Overload",
   "Difficulty Finding Relevant Content",
   "Struggling with Personalized Learning",
@@ -30,54 +32,18 @@ const challenges = [
 const countryCodes = [
   { code: "+1", country: "US/CA" },
   { code: "+44", country: "UK" },
-  { code: "+49", country: "DE" },
-  { code: "+33", country: "FR" },
-  { code: "+39", country: "IT" },
-  { code: "+34", country: "ES" },
-  { code: "+31", country: "NL" },
-  { code: "+46", country: "SE" },
-  { code: "+47", country: "NO" },
-  { code: "+45", country: "DK" },
-  { code: "+41", country: "CH" },
-  { code: "+43", country: "AT" },
-  { code: "+32", country: "BE" },
-  { code: "+351", country: "PT" },
-  { code: "+353", country: "IE" },
-  { code: "+358", country: "FI" },
   { code: "+91", country: "IN" },
   { code: "+86", country: "CN" },
+  { code: "+49", country: "DE" },
+  { code: "+33", country: "FR" },
   { code: "+81", country: "JP" },
-  { code: "+82", country: "KR" },
   { code: "+61", country: "AU" },
-  { code: "+64", country: "NZ" },
-  { code: "+55", country: "BR" },
-  { code: "+52", country: "MX" },
-  { code: "+54", country: "AR" },
-  { code: "+56", country: "CL" },
-  { code: "+57", country: "CO" },
-  { code: "+51", country: "PE" },
-  { code: "+58", country: "VE" },
-  { code: "+27", country: "ZA" },
-  { code: "+234", country: "NG" },
-  { code: "+254", country: "KE" },
-  { code: "+20", country: "EG" },
-  { code: "+971", country: "AE" },
-  { code: "+966", country: "SA" },
-  { code: "+65", country: "SG" },
-  { code: "+60", country: "MY" },
-  { code: "+66", country: "TH" },
-  { code: "+84", country: "VN" },
-  { code: "+63", country: "PH" },
-  { code: "+62", country: "ID" },
 ]
 
-function SubmitButton({ pending }: { pending: boolean }) {
+function SubmitButton() {
+  const { pending } = useFormStatus()
   return (
-    <Button
-      type="submit"
-      disabled={pending}
-      className="w-full bg-pink-600 hover:bg-pink-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
-    >
+    <Button type="submit" disabled={pending}>
       {pending ? "Signing Up..." : "Sign Up"}
     </Button>
   )
@@ -87,46 +53,48 @@ function SuccessStats({ stats }: { stats: any }) {
   if (!stats) return null
 
   return (
-    <div className="space-y-6 mt-6">
+    <div className="mt-8 space-y-6">
       <div className="text-center">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Welcome to the Community!</h3>
-        <p className="text-gray-600">You've joined a growing community of learners tackling similar challenges.</p>
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">Welcome to the Community!</h3>
+        <p className="text-gray-600">You're now part of a growing community of learners</p>
       </div>
 
       {/* Total Users Card */}
       <Card className="bg-blue-50 border-blue-200">
         <CardContent className="p-6">
-          <div className="flex items-center justify-center space-x-3">
-            <Users className="h-8 w-8 text-blue-600" />
+          <div className="flex items-center justify-center space-x-4">
+            <Users className="h-12 w-12 text-blue-600" />
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-900">{stats.totalUsers}</div>
-              <div className="text-sm text-blue-700">Community Members</div>
+              <div className="text-4xl font-bold text-blue-700">{stats.totalUsers}</div>
+              <div className="text-blue-600 font-medium">Total Community Members</div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Challenge Chart */}
+      {/* Bar Chart */}
       {stats.chartData && stats.chartData.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <BarChart3 className="h-5 w-5" />
-              <span>Most Common Learning Challenges</span>
-            </CardTitle>
-            <CardDescription>See what challenges others in the community are facing</CardDescription>
+            <CardTitle className="text-center text-lg">Most Common Learning Challenges</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64">
+            <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <BarChart
+                  data={stats.chartData}
+                  margin={{
+                    top: 20,
+                    right: 30,
+                    left: 20,
+                    bottom: 80,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="challenge" angle={-45} textAnchor="end" height={80} fontSize={12} interval={0} />
                   <YAxis fontSize={12} />
                   <Tooltip
-                    formatter={(value, name, props) => [
-                      `${value} users (${props.payload.percentage}%)`,
-                      props.payload.fullChallenge,
-                    ]}
+                    formatter={(value, name, props) => [`${value} users (${props.payload.percentage}%)`, "Count"]}
                     labelFormatter={(label, payload) => {
                       if (payload && payload[0]) {
                         return payload[0].payload.fullChallenge
@@ -146,185 +114,194 @@ function SuccessStats({ stats }: { stats: any }) {
 }
 
 export default function SignUpForm() {
-  const [state, formAction, pending] = useActionState(submitSignUp, null)
+  const [state, formAction] = useActionState(submitSignUp, initialState)
   const [selectedChallenges, setSelectedChallenges] = useState<string[]>([])
-  const [showOtherInput, setShowOtherInput] = useState(false)
+  const [otherChallengeText, setOtherChallengeText] = useState("")
 
   const handleChallengeChange = (challenge: string, checked: boolean) => {
     if (checked) {
       setSelectedChallenges([...selectedChallenges, challenge])
-      if (challenge === "Other: Please Specify") {
-        setShowOtherInput(true)
-      }
     } else {
       setSelectedChallenges(selectedChallenges.filter((c) => c !== challenge))
       if (challenge === "Other: Please Specify") {
-        setShowOtherInput(false)
+        setOtherChallengeText("")
       }
     }
   }
 
-  if (state?.success) {
-    return (
-      <div className="max-w-2xl mx-auto p-6">
-        <Alert className="mb-6 border-green-200 bg-green-50">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">{state.message}</AlertDescription>
-        </Alert>
-        <SuccessStats stats={state.stats} />
-      </div>
-    )
-  }
+  const isOtherSelected = selectedChallenges.includes("Other: Please Specify")
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Join CortexCatalyst</h1>
-        <p className="text-gray-600">
-          Be among the first to experience personalized AI-powered learning that adapts to your unique style and pace.
-        </p>
+    <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="mb-8 text-center">
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          Be the first to experience <span className="text-pink-600">CortexCatalyst</span>
+        </h2>
       </div>
 
-      {state?.error && (
-        <Alert className="mb-6 border-red-200 bg-red-50">
-          <AlertDescription className="text-red-800">
-            {state.error}
-            {state.details && <div className="text-sm mt-1 text-red-600">{state.details}</div>}
-          </AlertDescription>
-        </Alert>
-      )}
-
-      <form action={formAction} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-              Full Name *
-            </Label>
-            <Input
-              id="name"
-              name="name"
-              type="text"
-              required
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-pink-500 focus:border-pink-500"
-              placeholder="Enter your full name"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-              Email Address *
-            </Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              required
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-pink-500 focus:border-pink-500"
-              placeholder="Enter your email"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="countryCode" className="text-sm font-medium text-gray-700">
-              Country Code
-            </Label>
-            <select
-              id="countryCode"
-              name="countryCode"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-pink-500 focus:border-pink-500 bg-white"
-            >
-              <option value="">Select</option>
-              {countryCodes.map((country) => (
-                <option key={country.code} value={country.code}>
-                  {country.code} ({country.country})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="md:col-span-2">
-            <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-              Phone Number
-            </Label>
-            <Input
-              id="phone"
-              name="phone"
-              type="tel"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-pink-500 focus:border-pink-500"
-              placeholder="Enter your phone number"
-            />
-          </div>
-        </div>
-
-        <div>
-          <Label htmlFor="subject" className="text-sm font-medium text-gray-700">
-            What subject or skill are you most interested in learning? *
-          </Label>
-          <Textarea
-            id="subject"
-            name="subject"
-            required
-            rows={3}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-pink-500 focus:border-pink-500"
-            placeholder="e.g., Data Science, Web Development, Language Learning, etc."
-          />
-        </div>
-
-        <div>
-          <Label className="text-sm font-medium text-gray-700 mb-3 block">
-            What are your biggest learning challenges? (Select all that apply) *
-          </Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {challenges.map((challenge) => (
-              <div key={challenge} className="flex items-start space-x-2">
-                <Checkbox
-                  id={challenge}
-                  name="challenges"
-                  value={challenge}
-                  checked={selectedChallenges.includes(challenge)}
-                  onCheckedChange={(checked) => handleChallengeChange(challenge, checked as boolean)}
-                  className="mt-1"
-                />
-                <Label htmlFor={challenge} className="text-sm text-gray-700 leading-5">
-                  {challenge}
-                </Label>
-              </div>
-            ))}
-          </div>
-
-          {showOtherInput && (
-            <div className="mt-3">
-              <Label htmlFor="otherChallenge" className="text-sm font-medium text-gray-700">
-                Please specify your other learning challenge:
+      <Card className="shadow-lg">
+        <CardContent className="p-8">
+          <form action={formAction} className="space-y-6">
+            {/* Name */}
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-gray-700 font-medium">
+                Name <span className="text-red-500">*</span>
               </Label>
               <Input
-                id="otherChallenge"
-                name="otherChallenge"
+                id="name"
+                name="name"
                 type="text"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-pink-500 focus:border-pink-500"
-                placeholder="Describe your specific challenge"
+                placeholder="Enter your full name"
+                required
+                className="border-gray-300 focus:border-pink-500 focus:ring-pink-500"
               />
             </div>
-          )}
-        </div>
 
-        <div className="flex items-start space-x-2">
-          <Checkbox id="stayInLoop" name="stayInLoop" value="yes" className="mt-1" />
-          <Label htmlFor="stayInLoop" className="text-sm text-gray-700 leading-5">
-            I'd like to stay in the loop about CortexCatalyst's development and be notified when new features become
-            available.
-          </Label>
-        </div>
+            {/* Phone Number */}
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-gray-700 font-medium">
+                Phone Number
+              </Label>
+              <div className="flex gap-2">
+                <Select name="countryCode" defaultValue="+1">
+                  <SelectTrigger className="w-32 border-gray-300 focus:border-pink-500">
+                    <SelectValue placeholder="Code" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {countryCodes.map((item) => (
+                      <SelectItem key={item.code} value={item.code}>
+                        {item.code} {item.country}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  placeholder="Enter your phone number"
+                  className="flex-1 border-gray-300 focus:border-pink-500 focus:ring-pink-500"
+                />
+              </div>
+            </div>
 
-        <SubmitButton pending={pending} />
+            {/* Email */}
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-gray-700 font-medium">
+                Email <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="Enter your email address"
+                required
+                className="border-gray-300 focus:border-pink-500 focus:ring-pink-500"
+              />
+            </div>
 
-        <p className="text-xs text-gray-500 text-center">
-          By signing up, you agree to our Terms of Service and Privacy Policy. We respect your privacy and will never
-          spam you.
-        </p>
-      </form>
+            {/* Learning Challenges */}
+            <div className="space-y-4">
+              <Label className="text-gray-700 font-medium">
+                Why do you believe CortexCatalyst can address your knowledge and learning challenges?{" "}
+                <span className="text-red-500">*</span>
+              </Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {learningChallenges.map((challenge, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`challenge-${index}`}
+                      name="challenges"
+                      value={challenge}
+                      checked={selectedChallenges.includes(challenge)}
+                      onCheckedChange={(checked) => handleChallengeChange(challenge, checked as boolean)}
+                      className="border-gray-300 data-[state=checked]:bg-pink-500 data-[state=checked]:border-pink-500"
+                    />
+                    <Label htmlFor={`challenge-${index}`} className="text-sm text-gray-600 cursor-pointer">
+                      {challenge}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+
+              {/* Other Challenge Input Box */}
+              {isOtherSelected && (
+                <div className="mt-4 p-4 bg-pink-50 border border-pink-200 rounded-lg">
+                  <Label htmlFor="otherChallenge" className="text-gray-700 font-medium mb-2 block">
+                    Please specify your other learning challenge:
+                  </Label>
+                  <Input
+                    id="otherChallenge"
+                    name="otherChallenge"
+                    type="text"
+                    placeholder="Describe your specific learning challenge..."
+                    value={otherChallengeText}
+                    onChange={(e) => setOtherChallengeText(e.target.value)}
+                    className="border-pink-300 focus:border-pink-500 focus:ring-pink-500"
+                    required={isOtherSelected}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Stay in Loop */}
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="stayInLoop"
+                name="stayInLoop"
+                value="yes"
+                className="border-gray-300 data-[state=checked]:bg-pink-500 data-[state=checked]:border-pink-500"
+              />
+              <Label htmlFor="stayInLoop" className="text-sm text-gray-600 cursor-pointer">
+                <span className="text-pink-600 font-medium">Stay in Loop</span>
+                <br />
+                <span className="text-red-500">Yes, keep me updated on new features and platform updates!</span>
+              </Label>
+            </div>
+
+            {/* Subject */}
+            <div className="space-y-2">
+              <Label htmlFor="subject" className="text-gray-700 font-medium">
+                Subject <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="subject"
+                name="subject"
+                type="text"
+                placeholder="Enter subject"
+                required
+                className="border-gray-300 focus:border-pink-500 focus:ring-pink-500"
+              />
+            </div>
+
+            {/* Result */}
+            {state && (
+              <Alert className={state.success ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}>
+                {state.success ? (
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                ) : (
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                )}
+                <AlertDescription className={state.success ? "text-green-800" : "text-red-800"}>
+                  {state.success ? (
+                    state.message
+                  ) : (
+                    <>
+                      <strong>{state.error}</strong>
+                      {state.details && <div className="mt-1 text-sm">{state.details}</div>}
+                    </>
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <SubmitButton />
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Show stats after successful signup */}
+      {state?.success && state.stats && <SuccessStats stats={state.stats} />}
     </div>
   )
 }

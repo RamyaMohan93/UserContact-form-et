@@ -7,6 +7,21 @@ type ActionResult =
   | { success: true; message: string; stats?: any }
   | { success: false; error: string; details?: string }
 
+// Challenge mapping from form values to database columns
+const challengeMapping: Record<string, string> = {
+  "Information Overload": "challenge_information_overload",
+  "Difficulty Finding Relevant Content": "challenge_difficulty_finding_content",
+  "Struggling with Personalized Learning": "challenge_personalized_learning",
+  "Slow Knowledge Absorption": "challenge_slow_knowledge_absorption",
+  "Inconsistent Skill Development": "challenge_inconsistent_skill_development",
+  "Lack of Real-Time Feedback": "challenge_lack_realtime_feedback",
+  "Gaps in Existing Knowledge": "challenge_gaps_existing_knowledge",
+  "Limited Time for Learning": "challenge_limited_time_learning",
+  "Overwhelmed by Complex Topics": "challenge_overwhelmed_complex_topics",
+  "Fragmented Learning Resources": "challenge_fragmented_resources",
+  "Other: Please Specify": "challenge_other",
+}
+
 async function getChallengeStats() {
   if (!supabaseAdmin) return null
 
@@ -42,7 +57,7 @@ async function getChallengeStats() {
       Other: 0,
     }
 
-    const challengeMapping = {
+    const challengeMappingReverse = {
       challenge_information_overload: "Information Overload",
       challenge_difficulty_finding_content: "Difficulty Finding Relevant Content",
       challenge_personalized_learning: "Struggling with Personalized Learning",
@@ -57,7 +72,7 @@ async function getChallengeStats() {
     }
 
     signups?.forEach((signup) => {
-      Object.entries(challengeMapping).forEach(([dbColumn, displayName]) => {
+      Object.entries(challengeMappingReverse).forEach(([dbColumn, displayName]) => {
         if (signup[dbColumn as keyof typeof signup]) {
           challengeStats[displayName as keyof typeof challengeStats]++
         }
@@ -75,29 +90,15 @@ async function getChallengeStats() {
         percentage: totalUsers > 0 ? ((count / totalUsers) * 100).toFixed(1) : "0",
       }))
       .sort((a, b) => b.count - a.count)
+      .filter((item) => item.count > 0)
 
     return {
       totalUsers,
-      chartData: chartData.filter((item) => item.count > 0),
+      chartData,
     }
   } catch (error) {
     return null
   }
-}
-
-// Challenge mapping from form values to database columns
-const challengeMapping: Record<string, string> = {
-  "Information Overload": "challenge_information_overload",
-  "Difficulty Finding Relevant Content": "challenge_difficulty_finding_content",
-  "Struggling with Personalized Learning": "challenge_personalized_learning",
-  "Slow Knowledge Absorption": "challenge_slow_knowledge_absorption",
-  "Inconsistent Skill Development": "challenge_inconsistent_skill_development",
-  "Lack of Real-Time Feedback": "challenge_lack_realtime_feedback",
-  "Gaps in Existing Knowledge": "challenge_gaps_existing_knowledge",
-  "Limited Time for Learning": "challenge_limited_time_learning",
-  "Overwhelmed by Complex Topics": "challenge_overwhelmed_complex_topics",
-  "Fragmented Learning Resources": "challenge_fragmented_resources",
-  "Other: Please Specify": "challenge_other",
 }
 
 export async function submitSignUp(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
@@ -174,7 +175,10 @@ export async function submitSignUp(_prev: ActionResult | null, formData: FormDat
   }
 
   revalidatePath("/sign-up")
+
+  // Get stats for success display
   const stats = await getChallengeStats()
+
   return {
     success: true,
     message: "🎉 Thank you for signing up! We'll be in touch soon with updates about CortexCatalyst.",
