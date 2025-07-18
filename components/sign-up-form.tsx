@@ -1,22 +1,18 @@
 "use client"
 
-import { useFormStatus } from "react-dom"
-import { useActionState, useState } from "react"
+import { useActionState } from "react"
+import { submitSignUp } from "@/app/actions/sign-up"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { submitSignUp } from "@/app/actions/sign-up"
-import { CheckCircle, AlertCircle, Users } from "lucide-react"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
-import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
+import { CheckCircle, Users, BarChart3 } from "lucide-react"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
 
-const initialState = null
-
-const learningChallenges = [
+const challenges = [
   "Information Overload",
   "Difficulty Finding Relevant Content",
   "Struggling with Personalized Learning",
@@ -30,294 +26,184 @@ const learningChallenges = [
   "Other: Please Specify",
 ]
 
-const countryCodes = [
-  { code: "+1", country: "US/CA" },
-  { code: "+44", country: "UK" },
-  { code: "+91", country: "IN" },
-  { code: "+86", country: "CN" },
-  { code: "+49", country: "DE" },
-  { code: "+33", country: "FR" },
-  { code: "+81", country: "JP" },
-  { code: "+61", country: "AU" },
-]
-
-function SubmitButton() {
-  const { pending } = useFormStatus()
+function SubmitButton({ pending }: { pending: boolean }) {
   return (
-    <Button type="submit" disabled={pending}>
+    <Button type="submit" disabled={pending} className="w-full bg-pink-600 hover:bg-pink-700 text-white">
       {pending ? "Signing Up..." : "Sign Up"}
     </Button>
   )
 }
 
-interface SuccessStatsProps {
-  stats: {
-    totalUsers: number
-    chartData: Array<{
-      challenge: string
-      fullChallenge: string
-      count: number
-      percentage: string
-    }>
-  }
-}
+function SuccessStats({ stats }: { stats: any }) {
+  if (!stats) return null
 
-function SuccessStats({ stats }: SuccessStatsProps) {
   return (
-    <div className="mt-8 space-y-6">
+    <div className="space-y-6 mt-8">
       <div className="text-center">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">Welcome to the Community!</h3>
-        <p className="text-gray-600">You're now part of a growing community of learners</p>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">Welcome to the Community!</h3>
+        <p className="text-gray-600">You've joined a growing community of learners facing similar challenges.</p>
       </div>
 
       {/* Total Users Card */}
       <Card className="bg-blue-50 border-blue-200">
         <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-blue-600">Total Community Members</p>
-              <p className="text-3xl font-bold text-blue-700">{stats.totalUsers}</p>
+          <div className="flex items-center space-x-4">
+            <div className="p-3 bg-blue-100 rounded-full">
+              <Users className="h-8 w-8 text-blue-600" />
             </div>
-            <Users className="h-8 w-8 text-blue-500" />
+            <div>
+              <h4 className="text-2xl font-bold text-blue-900">{stats.totalUsers}</h4>
+              <p className="text-blue-700">Community Members</p>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Bar Chart */}
-      <Card>
-        <CardContent className="p-6">
-          <h4 className="text-lg font-semibold mb-4 text-center">Most Common Learning Challenges</h4>
-          <p className="text-sm text-gray-600 text-center mb-4">
-            See what challenges others in the community are facing
-          </p>
-          <ChartContainer
-            config={{
-              count: {
-                label: "Users",
-                color: "hsl(var(--chart-1))",
-              },
-            }}
-            className="h-64"
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stats.chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="challenge" angle={-45} textAnchor="end" height={80} fontSize={12} />
-                <YAxis />
-                <ChartTooltip
-                  content={({ active, payload }) => {
-                    if (active && payload && payload[0]) {
-                      const data = payload[0].payload
-                      return (
-                        <div className="bg-white p-3 border rounded shadow-lg">
-                          <p className="font-medium">{data.fullChallenge}</p>
-                          <p className="text-blue-600">Users: {data.count}</p>
-                          <p className="text-gray-600">Percentage: {data.percentage}%</p>
-                        </div>
-                      )
-                    }
-                    return null
-                  }}
-                />
-                <Bar dataKey="count" fill="var(--color-count)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+      {/* Challenge Chart */}
+      {stats.chartData && stats.chartData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <BarChart3 className="h-5 w-5" />
+              <span>Most Common Learning Challenges</span>
+            </CardTitle>
+            <CardDescription>See what challenges others in the community are facing</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stats.chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <XAxis dataKey="challenge" angle={-45} textAnchor="end" height={80} fontSize={12} interval={0} />
+                  <YAxis fontSize={12} />
+                  <Tooltip
+                    formatter={(value, name, props) => [
+                      `${value} users (${props.payload.percentage}%)`,
+                      props.payload.fullChallenge,
+                    ]}
+                    labelFormatter={(label, payload) => {
+                      if (payload && payload[0]) {
+                        return payload[0].payload.fullChallenge
+                      }
+                      return label
+                    }}
+                  />
+                  <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
 
 export default function SignUpForm() {
-  const [state, formAction] = useActionState(submitSignUp, initialState)
-  const [selectedChallenges, setSelectedChallenges] = useState<string[]>([])
-  const [otherChallengeText, setOtherChallengeText] = useState("")
+  const [state, formAction, pending] = useActionState(submitSignUp, null)
 
-  const handleChallengeChange = (challenge: string, checked: boolean) => {
-    if (checked) {
-      setSelectedChallenges([...selectedChallenges, challenge])
-    } else {
-      setSelectedChallenges(selectedChallenges.filter((c) => c !== challenge))
-      if (challenge === "Other: Please Specify") {
-        setOtherChallengeText("")
-      }
-    }
+  if (state?.success) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <Alert className="border-green-200 bg-green-50">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">{state.message}</AlertDescription>
+        </Alert>
+        <SuccessStats stats={state.stats} />
+      </div>
+    )
   }
 
-  const isOtherSelected = selectedChallenges.includes("Other: Please Specify")
-
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <div className="mb-8 text-center">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">
-          Be the first to experience <span className="text-pink-600">CortexCatalyst</span>
-        </h2>
-      </div>
-
-      <Card className="shadow-lg">
-        <CardContent className="p-8">
+    <div className="max-w-2xl mx-auto p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">Join CortexCatalyst</CardTitle>
+          <CardDescription className="text-center">
+            Sign up to get early access to our AI-powered learning platform
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           <form action={formAction} className="space-y-6">
-            {/* Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-gray-700 font-medium">
-                Name <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                placeholder="Enter your full name"
-                required
-                className="border-gray-300 focus:border-pink-500 focus:ring-pink-500"
-              />
-            </div>
+            {state?.error && (
+              <Alert className="border-red-200 bg-red-50">
+                <AlertDescription className="text-red-800">{state.error}</AlertDescription>
+              </Alert>
+            )}
 
-            {/* Phone Number */}
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="text-gray-700 font-medium">
-                Phone Number
-              </Label>
-              <div className="flex gap-2">
-                <Select name="countryCode" defaultValue="+1">
-                  <SelectTrigger className="w-32 border-gray-300 focus:border-pink-500">
-                    <SelectValue placeholder="Code" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {countryCodes.map((item) => (
-                      <SelectItem key={item.code} value={item.code}>
-                        {item.code} {item.country}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  placeholder="Enter your phone number"
-                  className="flex-1 border-gray-300 focus:border-pink-500 focus:ring-pink-500"
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name *</Label>
+                <Input id="name" name="name" required className="border-gray-300" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address *</Label>
+                <Input id="email" name="email" type="email" required className="border-gray-300" />
               </div>
             </div>
 
-            {/* Email */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="countryCode">Country Code</Label>
+                <Input id="countryCode" name="countryCode" placeholder="+1" className="border-gray-300" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input id="phone" name="phone" type="tel" className="border-gray-300" />
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-700 font-medium">
-                Email <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="Enter your email address"
+              <Label htmlFor="subject">What brings you to CortexCatalyst? *</Label>
+              <Textarea
+                id="subject"
+                name="subject"
                 required
-                className="border-gray-300 focus:border-pink-500 focus:ring-pink-500"
+                placeholder="Tell us about your learning goals..."
+                className="border-gray-300"
               />
             </div>
 
-            {/* Learning Challenges */}
-            <div className="space-y-4">
-              <Label className="text-gray-700 font-medium">
-                Why do you believe CortexCatalyst can address your knowledge and learning challenges?{" "}
-                <span className="text-red-500">*</span>
-              </Label>
+            <div className="space-y-3">
+              <Label className="text-base font-medium">What learning challenges do you face? *</Label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {learningChallenges.map((challenge, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`challenge-${index}`}
-                      name="challenges"
-                      value={challenge}
-                      checked={selectedChallenges.includes(challenge)}
-                      onCheckedChange={(checked) => handleChallengeChange(challenge, checked as boolean)}
-                      className="border-gray-300 data-[state=checked]:bg-pink-500 data-[state=checked]:border-pink-500"
-                    />
-                    <Label htmlFor={`challenge-${index}`} className="text-sm text-gray-600 cursor-pointer">
+                {challenges.map((challenge) => (
+                  <div key={challenge} className="flex items-center space-x-2">
+                    <Checkbox id={challenge} name="challenges" value={challenge} />
+                    <Label htmlFor={challenge} className="text-sm font-normal cursor-pointer">
                       {challenge}
                     </Label>
                   </div>
                 ))}
               </div>
-
-              {/* Other Challenge Input Box */}
-              {isOtherSelected && (
-                <div className="mt-4 p-4 bg-pink-50 border border-pink-200 rounded-lg">
-                  <Label htmlFor="otherChallenge" className="text-gray-700 font-medium mb-2 block">
-                    Please specify your other learning challenge:
-                  </Label>
-                  <Input
-                    id="otherChallenge"
-                    name="otherChallenge"
-                    type="text"
-                    placeholder="Describe your specific learning challenge..."
-                    value={otherChallengeText}
-                    onChange={(e) => setOtherChallengeText(e.target.value)}
-                    className="border-pink-300 focus:border-pink-500 focus:ring-pink-500"
-                    required={isOtherSelected}
-                  />
-                </div>
-              )}
             </div>
 
-            {/* Stay in Loop */}
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="stayInLoop"
-                name="stayInLoop"
-                value="yes"
-                className="border-gray-300 data-[state=checked]:bg-pink-500 data-[state=checked]:border-pink-500"
-              />
-              <Label htmlFor="stayInLoop" className="text-sm text-gray-600 cursor-pointer">
-                <span className="text-pink-600 font-medium">Stay in Loop</span>
-                <br />
-                <span className="text-red-500">Yes, keep me updated on new features and platform updates!</span>
-              </Label>
-            </div>
-
-            {/* Subject */}
             <div className="space-y-2">
-              <Label htmlFor="subject" className="text-gray-700 font-medium">
-                Subject <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="subject"
-                name="subject"
-                type="text"
-                placeholder="Enter subject"
-                required
-                className="border-gray-300 focus:border-pink-500 focus:ring-pink-500"
-              />
+              <Label htmlFor="otherChallenge">If you selected "Other", please specify:</Label>
+              <Input id="otherChallenge" name="otherChallenge" className="border-gray-300" />
             </div>
 
-            {/* Result */}
-            {state && (
-              <Alert className={state.success ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}>
-                {state.success ? (
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                ) : (
-                  <AlertCircle className="h-4 w-4 text-red-600" />
-                )}
-                <AlertDescription className={state.success ? "text-green-800" : "text-red-800"}>
-                  {state.success ? (
-                    state.message
-                  ) : (
-                    <>
-                      <strong>{state.error}</strong>
-                      {state.details && <div className="mt-1 text-sm">{state.details}</div>}
-                    </>
-                  )}
-                </AlertDescription>
-              </Alert>
-            )}
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Would you like to stay in the loop?</Label>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <input type="radio" id="stayInLoopYes" name="stayInLoop" value="yes" className="text-pink-600" />
+                  <Label htmlFor="stayInLoopYes" className="cursor-pointer">
+                    Yes
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input type="radio" id="stayInLoopNo" name="stayInLoop" value="no" className="text-pink-600" />
+                  <Label htmlFor="stayInLoopNo" className="cursor-pointer">
+                    No
+                  </Label>
+                </div>
+              </div>
+            </div>
 
-            <SubmitButton />
+            <SubmitButton pending={pending} />
           </form>
         </CardContent>
       </Card>
-
-      {/* Show stats after successful signup */}
-      {state?.success && state.stats && <SuccessStats stats={state.stats} />}
     </div>
   )
 }
