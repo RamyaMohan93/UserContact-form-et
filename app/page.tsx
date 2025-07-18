@@ -1,24 +1,36 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { redirect } from "next/navigation"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function HomePage() {
-  redirect("/sign-up")
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-blue-50">
-      <div className="text-center space-y-6">
-        <h1 className="text-4xl font-bold text-gray-900">
-          Welcome to <span className="text-pink-600">CortexCatalyst</span>
-        </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          The future of personalized learning is here. Join our community and be the first to experience revolutionary
-          learning technology.
-        </p>
-        <Link href="/sign-up">
-          <Button size="lg" className="bg-pink-600 hover:bg-pink-700">
-            Join the Waitlist
-          </Button>
-        </Link>
+    <div className="min-h-screen bg-gray-50 py-12 px-4">
+      <div className="max-w-2xl mx-auto text-center">
+        <h1 className="text-4xl font-bold text-gray-900 mb-8">CortexCatalyst</h1>
+
+        <div className="grid gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Sign Up</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Link href="/sign-up">
+                <Button className="w-full bg-pink-600 hover:bg-pink-700">Get Started</Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Analytics Dashboard</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Link href="/admin/dashboard">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700">View Analytics</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )
