@@ -65,13 +65,20 @@ async function getChallengeStats() {
     })
 
     const totalUsers = signups?.length || 0
-    const totalChallengeSelections = Object.values(challengeStats).reduce((sum, count) => sum + count, 0)
+
+    // Prepare chart data
+    const chartData = Object.entries(challengeStats)
+      .map(([challenge, count]) => ({
+        challenge: challenge.length > 20 ? challenge.substring(0, 20) + "..." : challenge,
+        fullChallenge: challenge,
+        count,
+        percentage: totalUsers > 0 ? ((count / totalUsers) * 100).toFixed(1) : "0",
+      }))
+      .sort((a, b) => b.count - a.count)
 
     return {
-      challengeStats,
       totalUsers,
-      totalChallengeSelections,
-      avgChallengesPerUser: totalUsers > 0 ? (totalChallengeSelections / totalUsers).toFixed(1) : "0",
+      chartData: chartData.filter((item) => item.count > 0),
     }
   } catch (error) {
     return null
