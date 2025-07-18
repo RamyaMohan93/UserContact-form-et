@@ -9,7 +9,7 @@ export default function HomePage() {
         <h1 className="text-4xl font-bold text-gray-900 mb-4">CortexCatalyst Sign-Up</h1>
         <p className="text-xl text-gray-600 mb-8">Revolutionize your learning experience</p>
 
-        <div className="max-w-md mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
           <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-pink-600">Get Started</CardTitle>
@@ -23,14 +23,20 @@ export default function HomePage() {
               </Link>
             </CardContent>
           </Card>
-        </div>
 
-        <div className="mt-8 p-4 bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">🚀 CortexCatalyst</h3>
-          <p className="text-sm text-gray-600">
-            Be the first to experience revolutionary AI-powered learning that adapts to your unique needs and
-            accelerates your knowledge acquisition.
-          </p>
+          <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-blue-600">Admin Dashboard</CardTitle>
+              <CardDescription>View user analytics and challenge statistics</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href="/admin/dashboard">
+                <Button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 rounded-full">
+                  View Analytics
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
