@@ -21,24 +21,11 @@ const challengeMapping: Record<string, string> = {
 }
 
 export async function submitSignUp(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
-  // Check if Supabase client is configured
   if (!supabaseAdmin) {
-    const missingVars = []
-    if (!process.env.SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      missingVars.push("SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL")
-    }
-    if (
-      !process.env.SUPABASE_SERVICE_ROLE_KEY &&
-      !process.env.SUPABASE_ANON_KEY &&
-      !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    ) {
-      missingVars.push("SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY, or NEXT_PUBLIC_SUPABASE_ANON_KEY")
-    }
-
     return {
       success: false,
       error: "Database connection not configured.",
-      details: `Missing environment variables: ${missingVars.join(", ")}`,
+      details: "Please check environment variables.",
     }
   }
 
@@ -47,11 +34,9 @@ export async function submitSignUp(_prev: ActionResult | null, formData: FormDat
     return typeof v === "string" ? v.trim() : ""
   }
 
-  // Get all selected challenges
   const challenges = formData.getAll("challenges").filter((c) => typeof c === "string") as string[]
   const otherChallenge = f("otherChallenge")
 
-  // Build the signup object with basic info
   const signUp: any = {
     name: f("name"),
     country_code: f("countryCode") || null,
@@ -61,7 +46,7 @@ export async function submitSignUp(_prev: ActionResult | null, formData: FormDat
     subject: f("subject"),
   }
 
-  // Add challenge columns - set all to false first
+  // Set all challenge columns to false first
   Object.values(challengeMapping).forEach((column) => {
     signUp[column] = false
   })
@@ -74,22 +59,13 @@ export async function submitSignUp(_prev: ActionResult | null, formData: FormDat
     }
   })
 
-  // Add other challenge description if "Other" is selected
   if (challenges.includes("Other: Please Specify")) {
     signUp.challenge_other_description = otherChallenge || null
   }
 
-  console.log("Form data processed:", {
-    name: signUp.name,
-    email: signUp.email,
-    subject: signUp.subject,
-    selectedChallenges: challenges,
-    otherDescription: signUp.challenge_other_description,
-  })
-
-  /* ---------- Validation ---------- */
+  // Validation
   if (!signUp.name || !signUp.email || !signUp.subject) {
-    return { success: false, error: "Please fill in all required fields (Name, Email, Subject)." }
+    return { success: false, error: "Please fill in all required fields." }
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signUp.email)) {
     return { success: false, error: "Please enter a valid email address." }
@@ -101,79 +77,20 @@ export async function submitSignUp(_prev: ActionResult | null, formData: FormDat
     return { success: false, error: "Please specify your other learning challenge." }
   }
 
-  /* ---------- Store in Database ---------- */
   try {
-    // Test database connection first
-    console.log("Testing database connection...")
-    const { error: testError } = await supabaseAdmin.from("signups").select("id").limit(1)
-
-    if (testError) {
-      console.error("Database test error:", testError)
-      return {
-        success: false,
-        error: "Database table not found.",
-        details: `Please run the database setup script first. Error: ${testError.message}`,
-      }
-    }
-
-    console.log("Database connection successful, inserting signup...")
-
-    // Insert signup with all data in one go
-    const { data: signupData, error: signupError } = await supabaseAdmin
-      .from("signups")
-      .insert(signUp)
-      .select()
-      .single()
+    const { error: signupError } = await supabaseAdmin.from("signups").insert(signUp).select().single()
 
     if (signupError) {
-      console.error("Supabase signup insert error:", {
-        error: signupError,
-        message: signupError.message,
-        details: signupError.details,
-        hint: signupError.hint,
-        code: signupError.code,
-      })
-
-      // Handle specific error cases
       if (signupError.code === "23505") {
-        return {
-          success: false,
-          error: "This email address is already registered.",
-          details: "Please use a different email address or contact support if this is an error.",
-        }
+        return { success: false, error: "This email address is already registered." }
       }
-
       if (signupError.code === "42P01") {
-        return {
-          success: false,
-          error: "Database table not found.",
-          details: "Please run the database setup script: scripts/create-single-signups-table.sql",
-        }
+        return { success: false, error: "Database table not found. Please run setup script." }
       }
-
-      return {
-        success: false,
-        error: "Failed to save signup.",
-        details: signupError.message || "Unknown database error occurred.",
-      }
+      return { success: false, error: "Failed to save signup.", details: signupError.message }
     }
-
-    if (!signupData) {
-      return {
-        success: false,
-        error: "Signup was not saved properly.",
-        details: "No data returned from database insert.",
-      }
-    }
-
-    console.log("Signup inserted successfully:", signupData.id)
   } catch (e: any) {
-    console.error("Unexpected error during signup:", e)
-    return {
-      success: false,
-      error: "An unexpected error occurred.",
-      details: e.message || "Please try again later.",
-    }
+    return { success: false, error: "An unexpected error occurred.", details: e.message }
   }
 
   revalidatePath("/sign-up")
