@@ -1,7 +1,9 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { redirect } from "next/navigation"
 
 export default function HomePage() {
+  redirect("/sign-up")
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-blue-50">
       <div className="text-center space-y-6">

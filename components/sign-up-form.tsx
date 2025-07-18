@@ -45,7 +45,7 @@ function SubmitButton() {
   const { pending } = useFormStatus()
   return (
     <Button type="submit" disabled={pending}>
-      {pending ? "Submitting..." : "Submit"}
+      {pending ? "Signing Up..." : "Sign Up"}
     </Button>
   )
 }

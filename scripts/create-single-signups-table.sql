@@ -1,22 +1,17 @@
+-- Create the signups table
 CREATE TABLE IF NOT EXISTS signups (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
-  email VARCHAR(255) UNIQUE NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
   phone VARCHAR(50),
-  country_code VARCHAR(10),
   subject VARCHAR(255) NOT NULL,
+  challenges TEXT[] NOT NULL,
   stay_in_loop BOOLEAN DEFAULT false,
-  challenge_information_overload BOOLEAN DEFAULT false,
-  challenge_difficulty_finding_content BOOLEAN DEFAULT false,
-  challenge_personalized_learning BOOLEAN DEFAULT false,
-  challenge_slow_knowledge_absorption BOOLEAN DEFAULT false,
-  challenge_inconsistent_skill_development BOOLEAN DEFAULT false,
-  challenge_lack_realtime_feedback BOOLEAN DEFAULT false,
-  challenge_gaps_existing_knowledge BOOLEAN DEFAULT false,
-  challenge_limited_time_learning BOOLEAN DEFAULT false,
-  challenge_overwhelmed_complex_topics BOOLEAN DEFAULT false,
-  challenge_fragmented_resources BOOLEAN DEFAULT false,
-  challenge_other BOOLEAN DEFAULT false,
-  challenge_other_description TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Create an index on email for faster lookups
+CREATE INDEX IF NOT EXISTS idx_signups_email ON signups(email);
+
+-- Create an index on created_at for time-based queries
+CREATE INDEX IF NOT EXISTS idx_signups_created_at ON signups(created_at);
