@@ -2,62 +2,61 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Brain, Zap, Target, Users, TrendingUp, BarChart3 } from "lucide-react"
+import { Brain, Zap, Target, Users, TrendingUp, Sparkles, BarChart3 } from "lucide-react"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
-              <Brain className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">CortexCatalyst</span>
-            </div>
-            <div className="flex space-x-4">
-              <Link href="/sign-up">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white">Get Started</Button>
-              </Link>
-              <Link href="/admin/dashboard">
-                <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-transparent">
-                  View Analytics
-                </Button>
-              </Link>
-            </div>
+      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <Brain className="h-8 w-8 text-purple-600" />
+            <span className="text-2xl font-bold text-gray-900">CortexCatalyst</span>
+          </div>
+          <div className="flex space-x-3">
+            <Link href="/sign-up">
+              <Button className="bg-purple-600 hover:bg-purple-700 text-white">Get Started</Button>
+            </Link>
+            <Link href="/admin/dashboard">
+              <Button variant="outline" className="border-purple-200 text-purple-700 hover:bg-purple-50 bg-transparent">
+                View Analytics
+              </Button>
+            </Link>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Badge className="mb-4 bg-blue-100 text-blue-800 hover:bg-blue-100">AI-Powered Learning Platform</Badge>
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            Accelerate Your Learning with{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-              AI Intelligence
+      <section className="py-20 px-4">
+        <div className="container mx-auto text-center">
+          <Badge className="mb-4 bg-purple-100 text-purple-800 hover:bg-purple-100">🚀 Now in Early Access</Badge>
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            AI-Powered Learning
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+              {" "}
+              That Adapts
             </span>
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Transform how you learn with personalized AI guidance, real-time feedback, and adaptive content that evolves
-            with your progress.
+          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+            Experience personalized education that evolves with your learning style, pace, and goals. Join thousands of
+            learners already transforming their knowledge journey.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/sign-up">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
-                Join the Community
-                <ArrowRight className="ml-2 h-4 w-4" />
+              <Button size="lg" className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 text-lg">
+                <Sparkles className="mr-2 h-5 w-5" />
+                Start Learning Today
               </Button>
             </Link>
             <Link href="/admin/dashboard">
               <Button
                 size="lg"
                 variant="outline"
-                className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-transparent"
+                className="border-purple-200 text-purple-700 hover:bg-purple-50 px-8 py-3 text-lg bg-transparent"
               >
-                <BarChart3 className="mr-2 h-4 w-4" />
-                View Analytics
+                <BarChart3 className="mr-2 h-5 w-5" />
+                View Community Stats
               </Button>
             </Link>
           </div>
@@ -65,39 +64,41 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+      <section className="py-16 px-4 bg-white">
+        <div className="container mx-auto">
+          <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Why Choose CortexCatalyst?</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Our AI-powered platform addresses the most common learning challenges faced by modern learners.
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Our AI-driven platform addresses the most common learning challenges with innovative solutions.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="border-gray-200 hover:shadow-lg transition-shadow">
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="border-purple-100 hover:shadow-lg transition-shadow">
               <CardHeader>
-                <Brain className="h-12 w-12 text-blue-600 mb-4" />
-                <CardTitle>Personalized Learning</CardTitle>
+                <Brain className="h-12 w-12 text-purple-600 mb-4" />
+                <CardTitle className="text-xl">Personalized Learning Paths</CardTitle>
                 <CardDescription>
-                  AI adapts to your learning style, pace, and preferences for maximum effectiveness.
+                  AI analyzes your learning style and creates customized curricula that adapt in real-time to your
+                  progress.
                 </CardDescription>
               </CardHeader>
             </Card>
-            <Card className="border-gray-200 hover:shadow-lg transition-shadow">
+            <Card className="border-pink-100 hover:shadow-lg transition-shadow">
               <CardHeader>
-                <Zap className="h-12 w-12 text-purple-600 mb-4" />
-                <CardTitle>Real-Time Feedback</CardTitle>
+                <Zap className="h-12 w-12 text-pink-600 mb-4" />
+                <CardTitle className="text-xl">Instant Feedback</CardTitle>
                 <CardDescription>
-                  Get instant insights and corrections to accelerate your learning progress.
+                  Get immediate, actionable insights on your performance with AI-powered assessments and
+                  recommendations.
                 </CardDescription>
               </CardHeader>
             </Card>
-            <Card className="border-gray-200 hover:shadow-lg transition-shadow">
+            <Card className="border-blue-100 hover:shadow-lg transition-shadow">
               <CardHeader>
-                <Target className="h-12 w-12 text-green-600 mb-4" />
-                <CardTitle>Focused Content</CardTitle>
+                <Target className="h-12 w-12 text-blue-600 mb-4" />
+                <CardTitle className="text-xl">Goal-Oriented Learning</CardTitle>
                 <CardDescription>
-                  Cut through information overload with curated, relevant content tailored to your goals.
+                  Set specific objectives and let our AI guide you through the most efficient path to achieve them.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -106,60 +107,56 @@ export default function HomePage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Join Our Growing Community</h2>
-            <p className="text-xl text-gray-600">Learners worldwide are already transforming their education</p>
+      <section className="py-16 px-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+        <div className="container mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Join Our Growing Community</h2>
+            <p className="text-lg opacity-90 max-w-2xl mx-auto">
+              Thousands of learners are already experiencing the future of education.
+            </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="flex items-center justify-center mb-4">
-                <Users className="h-12 w-12 text-blue-600" />
-              </div>
-              <div className="text-4xl font-bold text-gray-900 mb-2">1,000+</div>
-              <div className="text-gray-600">Active Learners</div>
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            <div>
+              <Users className="h-12 w-12 mx-auto mb-4 opacity-90" />
+              <div className="text-4xl font-bold mb-2">10,000+</div>
+              <div className="text-lg opacity-90">Active Learners</div>
             </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center mb-4">
-                <TrendingUp className="h-12 w-12 text-green-600" />
-              </div>
-              <div className="text-4xl font-bold text-gray-900 mb-2">85%</div>
-              <div className="text-gray-600">Improvement Rate</div>
+            <div>
+              <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-90" />
+              <div className="text-4xl font-bold mb-2">95%</div>
+              <div className="text-lg opacity-90">Completion Rate</div>
             </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center mb-4">
-                <Target className="h-12 w-12 text-purple-600" />
-              </div>
-              <div className="text-4xl font-bold text-gray-900 mb-2">50+</div>
-              <div className="text-gray-600">Learning Paths</div>
+            <div>
+              <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-90" />
+              <div className="text-4xl font-bold mb-2">4.9/5</div>
+              <div className="text-lg opacity-90">User Satisfaction</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Ready to Transform Your Learning?</h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Join thousands of learners who are already experiencing the power of AI-driven education.
+      <section className="py-20 px-4">
+        <div className="container mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Ready to Transform Your Learning?</h2>
+          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+            Join the waitlist today and be among the first to experience the future of personalized education.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/sign-up">
-              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
-                Get Started Today
-                <ArrowRight className="ml-2 h-4 w-4" />
+              <Button size="lg" className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 text-lg">
+                <Sparkles className="mr-2 h-5 w-5" />
+                Get Early Access
               </Button>
             </Link>
             <Link href="/admin/dashboard">
               <Button
                 size="lg"
                 variant="outline"
-                className="border-white text-white hover:bg-white hover:text-blue-600 bg-transparent"
+                className="border-purple-200 text-purple-700 hover:bg-purple-50 px-8 py-3 text-lg bg-transparent"
               >
-                <BarChart3 className="mr-2 h-4 w-4" />
-                View Community Stats
+                <BarChart3 className="mr-2 h-5 w-5" />
+                Explore Analytics
               </Button>
             </Link>
           </div>
@@ -167,14 +164,15 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Brain className="h-8 w-8 text-blue-400" />
-              <span className="ml-2 text-xl font-bold">CortexCatalyst</span>
-            </div>
-            <div className="text-gray-400">© 2024 CortexCatalyst. All rights reserved.</div>
+      <footer className="bg-gray-900 text-white py-12 px-4">
+        <div className="container mx-auto text-center">
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <Brain className="h-6 w-6 text-purple-400" />
+            <span className="text-xl font-bold">CortexCatalyst</span>
+          </div>
+          <p className="text-gray-400 mb-4">Revolutionizing education through AI-powered personalization.</p>
+          <div className="text-sm text-gray-500">
+            © 2024 CortexCatalyst. All rights reserved. | Privacy Policy | Terms of Service
           </div>
         </div>
       </footer>
