@@ -6,31 +6,19 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-2xl mx-auto text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">CortexCatalyst</h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">CortexCatalyst</h1>
+        <p className="text-xl text-gray-600 mb-8">Revolutionize your learning experience</p>
 
-        <div className="grid gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Sign Up</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Link href="/sign-up">
-                <Button className="w-full bg-pink-600 hover:bg-pink-700">Get Started</Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Analytics Dashboard</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Link href="/admin/dashboard">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700">View Analytics</Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Get Started</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Link href="/sign-up">
+              <Button className="w-full bg-pink-600 hover:bg-pink-700">Sign Up Now</Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

@@ -11,6 +11,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { submitSignUp } from "@/app/actions/sign-up"
 import { CheckCircle, AlertCircle } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
+import { Users, TrendingUp, BarChart3 } from "lucide-react"
 
 const initialState = null
 
@@ -45,6 +49,114 @@ function SubmitButton() {
     <Button type="submit" disabled={pending}>
       {pending ? "Submitting..." : "Submit"}
     </Button>
+  )
+}
+
+function SuccessStats({ stats }: { stats: any }) {
+  if (!stats) return null
+
+  const chartData = Object.entries(stats.challengeStats)
+    .map(([challenge, count]) => ({
+      challenge: challenge.length > 15 ? challenge.substring(0, 15) + "..." : challenge,
+      fullChallenge: challenge,
+      count,
+      percentage: stats.totalUsers > 0 ? (((count as number) / stats.totalUsers) * 100).toFixed(1) : "0",
+    }))
+    .sort((a, b) => (b.count as number) - (a.count as number))
+    .filter((item) => item.count > 0)
+
+  return (
+    <div className="mt-8 space-y-6">
+      <div className="text-center">
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">Welcome to the Community!</h3>
+        <p className="text-gray-600">Here's what challenges our users are facing:</p>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="bg-blue-50 border-blue-200">
+          <CardContent className="p-4 text-center">
+            <Users className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+            <p className="text-2xl font-bold text-blue-700">{stats.totalUsers}</p>
+            <p className="text-sm text-blue-600">Total Users</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-green-50 border-green-200">
+          <CardContent className="p-4 text-center">
+            <BarChart3 className="h-8 w-8 text-green-500 mx-auto mb-2" />
+            <p className="text-2xl font-bold text-green-700">{stats.totalChallengeSelections}</p>
+            <p className="text-sm text-green-600">Challenge Selections</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-purple-50 border-purple-200">
+          <CardContent className="p-4 text-center">
+            <TrendingUp className="h-8 w-8 text-purple-500 mx-auto mb-2" />
+            <p className="text-2xl font-bold text-purple-700">{stats.avgChallengesPerUser}</p>
+            <p className="text-sm text-purple-600">Avg per User</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Chart */}
+      <Card>
+        <CardContent className="p-6">
+          <h4 className="text-lg font-semibold mb-4 text-center">Most Common Learning Challenges</h4>
+          <ChartContainer
+            config={{
+              count: {
+                label: "Users",
+                color: "hsl(var(--chart-1))",
+              },
+            }}
+            className="h-64"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="challenge" angle={-45} textAnchor="end" height={80} fontSize={12} />
+                <YAxis />
+                <ChartTooltip
+                  content={({ active, payload }) => {
+                    if (active && payload && payload[0]) {
+                      const data = payload[0].payload
+                      return (
+                        <div className="bg-white p-3 border rounded shadow-lg">
+                          <p className="font-medium">{data.fullChallenge}</p>
+                          <p className="text-blue-600">Users: {data.count}</p>
+                          <p className="text-gray-600">Percentage: {data.percentage}%</p>
+                        </div>
+                      )
+                    }
+                    return null
+                  }}
+                />
+                <Bar dataKey="count" fill="var(--color-count)" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+
+      {/* Challenge Breakdown */}
+      <Card>
+        <CardContent className="p-6">
+          <h4 className="text-lg font-semibold mb-4">Challenge Breakdown</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {chartData.map((item, index) => (
+              <div key={item.fullChallenge} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <p className="font-medium text-sm">{item.fullChallenge}</p>
+                  <p className="text-xs text-gray-500">{item.percentage}% of users</p>
+                </div>
+                <Badge variant="secondary">{item.count}</Badge>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
 
@@ -234,6 +346,9 @@ export default function SignUpForm() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Show stats after successful signup */}
+      {state?.success && state.stats && <SuccessStats stats={state.stats} />}
     </div>
   )
 }
