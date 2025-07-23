@@ -181,7 +181,7 @@ export async function submitSignUp(_prev: ActionResult | null, formData: FormDat
 
   return {
     success: true,
-    message: "🎉 Thank signing up! We'll be in touch soon with updates about CortexCatalyst.",
+    message: "🎉 Thanks signing up! We'll be in touch soon with updates about CortexCatalyst.",
     stats,
   }
 }
