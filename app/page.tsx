@@ -33,7 +33,7 @@ export default function HomePage() {
         <div className="container mx-auto text-center">
           <Badge className="mb-4 bg-pink-100 text-pink-800 border-pink-200">🚀 Early Access Available</Badge>
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-            Revolutionize Your Learning with{" "}
+            Revolutionize Your Learnings with{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-blue-600">
               AI-Powered Intelligence
             </span>
