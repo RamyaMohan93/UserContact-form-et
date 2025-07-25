@@ -113,7 +113,7 @@ export default function HomePage() {
           </p>
           <div className="grid md:grid-cols-3 gap-8">
             <div>
-              <div className="text-5xl font-bold mb-2">10K+</div>
+              <div className="text-5xl font-bold mb-2">100K+</div>
               <div className="text-xl opacity-90">Active Learners</div>
             </div>
             <div>
